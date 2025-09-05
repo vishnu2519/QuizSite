@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>RRSDCE Quiz Portal - Begusarai</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .quiz-card {
+      background: #fff;
+      max-width: 800px;
+      width: 100%;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      position: relative;
+    }
+    .college-logo {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .college-logo img {
+      max-width: 10rem;
+      border-radius: 50%;
+      border: 2px solid #1e3c72;
+    }
+    .college-heading {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    h1 {text-align: center; color: #1e3c72;}
+    p {text-align: center; color: #333;}
+    .question {font-size: 18px; font-weight: bold; margin: 15px 0;}
+    .options label {
+      display: block;
+      background: #f4f4f4;
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .options input {display: inline-block; margin-right: 8px;}
+    .options label:hover {background: #eef3ff;}
+    .btn-group {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 15px;
+    }
+    button {
+      background: #1e3c72;
+      color: #fff;
+      border: none;
+      padding: 10px 25px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button[disabled] { opacity: 0.6; cursor: not-allowed; }
+    button:hover:not([disabled]) {background: #2a5298;}
+    #result {
+      text-align: center;
+      font-size: 20px;
+      margin-top: 20px;
+      color: #1e3c72;
+      font-weight: bold;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+    th {background: #1e3c72; color: white;}
+    tr:nth-child(even) {background: #f9f9f9;}
+    .name-input {text-align: center; margin-bottom: 15px;}
+    .name-input input {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      width: 70%;
+      margin: 5px 0;
+    }
+    footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 14px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-card">
+    <div class="college-logo">
+      <img src="OIP.jpeg" alt="LOGO">
+    </div>
+    <div class="college-heading">
+      <h1>RRSDCE Quiz Portal</h1>
+      <p>R. R. S. D. College of Engineering, Begusarai</p>
+    </div>
+    
+
+    <!-- Start Screen -->
+    <div id="start">
+      <div class="name-input">
+        <p>Enter Your Name:</p>
+        <input type="text" id="studentName" placeholder="Your Name">
+        <p>Enter Registration Number:</p>
+        <input type="text" id="regNo" placeholder="Registration Number">
+      </div>
+      <div style="text-align:center;">
+        <button id="startBtn" type="button">Start Quiz</button>
+      </div>
+    </div>
+
+    <!-- Quiz Screen -->
+    <div id="quiz" style="display:none;">
+      <div class="question" id="question"></div>
+      <div class="options" id="options" aria-live="polite"></div>
+      <div class="btn-group">
+        <button id="prevBtn" type="button">Previous</button>
+        <button id="nextBtn" type="button">Next</button>
+      </div>
+    </div>
+
+    <!-- Result + Leaderboard -->
+    <div id="result"></div>
+    <div id="leaderboard"></div>
+
+    <footer>© Copyright Reserved by Vishnu Kumar</footer>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // ===== Quiz Questions =====
+      const quizData = [
+        { question: "What does RRSDCE stand for?",
+          options: ["R. R. S. D. College of Engineering", "Regional Research Skill Dev. College", "Rashtriya Science & Dev. College", "None of the above"],
+          correct: 0 },
+        { question: "RRSDCE is located in?",
+          options: ["Patna", "Begusarai", "Darbhanga", "Gaya"],
+          correct: 1 },
+        { question: "Which language is used for web frontend?",
+          options: ["Python", "Java", "HTML & CSS", "C"],
+          correct: 2 },
+        { question: "2 + 2 = ?",
+          options: ["3", "4", "5", "6"],
+          correct: 1 },
+        { question: "Capital of Bihar?",
+          options: ["Patna", "Ranchi", "Lucknow", "Delhi"],
+          correct: 0 },
+        { question: "HTML stands for?",
+          options: ["HyperText Markup Language", "HighText Machine Language", "Hyper Transfer Machine Language", "None"],
+          correct: 0 },
+        { question: "CSS is used for?",
+          options: ["Styling", "Database", "Logic", "Compiling"],
+          correct: 0 },
+        { question: "Who is known as father of Computer?",
+          options: ["Charles Babbage", "Alan Turing", "Newton", "Pascal"],
+          correct: 0 },
+        { question: "Which is NOT a programming language?",
+          options: ["Python", "Java", "C++", "HTML"],
+          correct: 3 },
+        { question: "5 * 5 = ?",
+          options: ["10", "15", "20", "25"],
+          correct: 3 }
+      ];
+
+      // Elements
+      const startDiv = document.getElementById('start');
+      const quizDiv = document.getElementById('quiz');
+      const startBtn = document.getElementById('startBtn');
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      const qEl = document.getElementById('question');
+      const optsEl = document.getElementById('options');
+      const resultEl = document.getElementById('result');
+      const leaderboardEl = document.getElementById('leaderboard');
+
+      let current = 0, score = 0, student = "", regNo = "";
+      let answers = new Array(quizData.length).fill(null);
+
+      // Wire buttons
+      startBtn.addEventListener('click', startQuiz);
+      prevBtn.addEventListener('click', prevQuestion);
+      nextBtn.addEventListener('click', nextQuestion);
+
+      function startQuiz() {
+        const name = document.getElementById("studentName").value.trim();
+        const reg = document.getElementById("regNo").value.trim();
+        if (!name || !reg) {
+          alert("Please enter both name and registration number.");
+          return;
+        }
+        student = name; regNo = reg;
+        startDiv.style.display = 'none';
+        quizDiv.style.display = 'block';
+        current = 0;
+        answers.fill(null);
+        renderCurrent();
+      }
+
+      function renderCurrent() {
+        const q = quizData[current];
+        qEl.textContent = `${current + 1}. ${q.question}`;
+        // Build options with unique ids
+        optsEl.innerHTML = '';
+        q.options.forEach((opt, idx) => {
+          const id = `opt_${current}_${idx}`;
+          const wrapper = document.createElement('label');
+          wrapper.setAttribute('for', id);
+          wrapper.style.display = 'block';
+          wrapper.style.cursor = 'pointer';
+          wrapper.className = 'option-label';
+          const radio = document.createElement('input');
+          radio.type = 'radio';
+          radio.name = 'ans';
+          radio.id = id;
+          radio.value = idx;
+          // restore previous selection if any
+          if (answers[current] === idx) radio.checked = true;
+          // when user clicks a radio, update answers array
+          radio.addEventListener('change', () => {
+            answers[current] = parseInt(radio.value, 10);
+          });
+          wrapper.appendChild(radio);
+          const text = document.createTextNode(' ' + opt);
+          wrapper.appendChild(text);
+          optsEl.appendChild(wrapper);
+        });
+
+        // manage button states
+        prevBtn.disabled = current === 0;
+        nextBtn.textContent = (current === quizData.length - 1) ? 'Finish' : 'Next';
+      }
+
+      function prevQuestion() {
+        // record current selection (if radio selected, change handler already did that)
+        if (current > 0) {
+          current--;
+          renderCurrent();
+        }
+      }
+
+      function nextQuestion() {
+        // if there is a selected radio, answers array already updated by change handler.
+        // For safety, try to read selected (in case user didn't change)
+        const selected = document.querySelector("input[name='ans']:checked");
+        if (selected) answers[current] = parseInt(selected.value, 10);
+
+        if (current < quizData.length - 1) {
+          current++;
+          renderCurrent();
+        } else {
+          finishQuiz();
+        }
+      }
+
+      function finishQuiz() {
+        // calculate score
+        score = answers.reduce((acc, val, idx) => {
+          return acc + ((val === quizData[idx].correct) ? 1 : 0);
+        }, 0);
+        quizDiv.style.display = 'none';
+        resultEl.textContent = `${student} (Reg: ${regNo}), Your Score: ${score}/${quizData.length}`;
+        saveRank(student, regNo, score);
+        showLeaderboard();
+      }
+
+      function saveRank(name, reg, score) {
+        try {
+          let board = JSON.parse(localStorage.getItem("rrsdce_board")) || [];
+          board.push({name, reg, score, ts: Date.now()});
+          // sort by score desc then timestamp asc
+          board.sort((a, b) => {
+            if (b.score !== a.score) return b.score - a.score;
+            return a.ts - b.ts;
+          });
+          board = board.slice(0, 50);
+          localStorage.setItem("rrsdce_board", JSON.stringify(board));
+        } catch (e) {
+          console.error('Cannot save leaderboard:', e);
+        }
+      }
+
+      function showLeaderboard() {
+        let board = JSON.parse(localStorage.getItem("rrsdce_board")) || [];
+        if (board.length === 0) {
+          leaderboardEl.innerHTML = '<p style="text-align:center;">No leaderboard data yet.</p>';
+          return;
+        }
+        let html = "<h2 style='text-align:center;'>🏆 Leaderboard (Top 50)</h2>";
+        html += "<table><tr><th>Rank</th><th>Name</th><th>Reg No</th><th>Score</th></tr>";
+        board.forEach((p, i) => {
+          html += `<tr><td>${i+1}</td><td>${escapeHtml(p.name)}</td><td>${escapeHtml(p.reg)}</td><td>${p.score}</td></tr>`;
+        });
+        html += "</table>";
+        leaderboardEl.innerHTML = html;
+      }
+
+      // simple escape to avoid HTML injection if user types tags into name/reg
+      function escapeHtml(text) {
+        return String(text).replace(/[&<>"'`=\/]/g, function (s) {
+          return ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;',
+            "'": '&#39;', '`': '&#96;', '=': '&#61;', '/': '&#47;'
+          })[s];
+        });
+      }
+
+      // If you want to show existing leaderboard on load:
+      showLeaderboard();
+    });
+  </script>
+</body>
+</html>
